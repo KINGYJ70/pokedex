@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pokélog</title>
+<style>
+:root{--good:#2e9e5b;--bg:#f4f5f8;--card:#fff;--text:#1b1d26;--muted:#6b7080;--line:#e2e4ec;--red:#e63946;
+--normal:#a8a77a;--fire:#ee8130;--water:#6390f0;--electric:#f7d02c;--grass:#7ac74c;--fighting:#c22e28;--poison:#a33ea1;--flying:#a98ff3;--psychic:#f95587;--ghost:#735797;--dragon:#6f35fc;--steel:#b7b7ce;--fairy:#d685ad;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13141a;--card:#1d1f29;--text:#eceef5;--muted:#9296a8;--line:#2d3040;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13141a;--card:#1d1f29;--text:#eceef5;--muted:#9296a8;--line:#2d3040;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--red);color:#fff;padding:20px 16px 24px}
+.wrap{max-width:1000px;margin:0 auto}
+h1{margin:0 0 12px;font-size:28px;letter-spacing:.5px}
+.search{width:100%;padding:12px 16px;border:0;border-radius:999px;font-size:16px;background:#fff;color:#1b1d26}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px 4px;max-width:1000px;margin:0 auto}
+.chips[hidden]{display:none}
+.active{display:flex;justify-content:center;align-items:center;gap:14px;width:calc(100% - 32px);max-width:968px;margin:12px auto 0;padding:8px 14px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:14px}
+.active[hidden]{display:none}
+.active b{text-transform:capitalize}
+.active button{background:var(--red);color:#fff;border:0;border-radius:999px;padding:6px 14px;font-weight:600;cursor:pointer}
+.top-row h1{cursor:pointer}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.top-row h1{margin:0}
+.burger{background:rgba(255,255,255,.22);border:0;color:#fff;border-radius:10px;padding:8px 12px;font-size:20px;line-height:1;cursor:pointer;display:flex;gap:8px;align-items:center}
+.burger span{font-size:14px;text-transform:capitalize}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--text);padding:6px 14px;border-radius:999px;cursor:pointer;font-size:14px;text-transform:capitalize}
+.chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;padding:14px 16px 100px;max-width:1000px;margin:0 auto}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer;text-align:center;transition:transform .15s}
+.card:hover{transform:translateY(-3px)}
+.num{font-size:12px;color:var(--muted);text-align:right}
+.orb{width:84px;height:84px;border-radius:50%;margin:4px auto 10px;display:grid;place-items:center;font-size:34px;font-weight:700;color:#fff}
+.name{font-weight:600;text-transform:capitalize}
+.tags{display:flex;gap:4px;justify-content:center;margin-top:6px;flex-wrap:wrap}
+.tag{font-size:11px;color:#fff;padding:2px 10px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px}
+dialog{border:0;border-radius:20px;padding:0;width:min(420px,92vw);background:var(--card);color:var(--text)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.orb{position:relative}.orb img{position:absolute;left:-12%;top:-12%;width:124%;height:124%;object-fit:contain}.orb.ok{font-size:0}
+.pick{position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-size:16px;line-height:1}
+.pick.on{background:var(--red);color:#fff;border-color:var(--red)}
+.tray{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center}
+.tray[hidden]{display:none}
+.sel{flex:1;display:flex;gap:6px;overflow-x:auto}
+.pill{color:#fff;padding:4px 6px 4px 12px;border-radius:999px;font-size:13px;text-transform:capitalize;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.pill button{background:none;border:0;color:#fff;cursor:pointer;font-size:16px;line-height:1}
+.go{background:var(--red);color:#fff;border:0;border-radius:999px;padding:8px 16px;font-weight:600;cursor:pointer}
+.go:disabled{opacity:.4;cursor:default}
+.clr{background:none;border:0;color:var(--muted);cursor:pointer}
+#cmp{width:min(560px,94vw)}
+.chead{display:flex;justify-content:space-between;align-items:center;padding:14px 20px 0;font-size:18px}
+.cx{background:none;border:0;color:var(--text);font-size:26px;cursor:pointer}
+.crow{display:grid;grid-template-columns:44px repeat(var(--n),1fr);gap:8px;align-items:center;margin:8px 0;font-size:13px;text-align:center}
+.crow>span{text-align:left;color:var(--muted)}
+.cell b{display:block;font-size:15px}
+.cell.best b{color:var(--good)}
+.bar i{background:var(--muted)}
+.best .bar i{background:var(--good)}
+.orb.sm{width:64px;height:64px;font-size:26px;margin:0 auto 6px}
+.verdict{margin:14px 0 0;padding:12px;border-radius:12px;background:var(--bg);font-size:14px}
+.top{padding:20px;text-align:center;color:#fff;position:relative}
+.top .orb{background:rgba(255,255,255,.25);width:110px;height:110px;font-size:46px}
+.x{position:absolute;right:12px;top:10px;background:none;border:0;color:#fff;font-size:26px;cursor:pointer}
+.body{padding:16px 20px 22px}
+.facts{display:flex;justify-content:space-around;margin:12px 0;text-align:center;font-size:14px}
+.facts b{display:block;font-size:17px}
+.row{display:grid;grid-template-columns:44px 30px 1fr;gap:8px;align-items:center;font-size:13px;margin:6px 0}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="top-row"><h1>Pokélog</h1><button class="burger" id="menu" aria-expanded="false" aria-controls="chips" aria-label="Filter by type">☰<span id="lbl"></span></button></div>
+<input id="q" class="search" type="search" placeholder="Search by name or number…" aria-label="Search">
+<p style="margin:8px 0 0;font-size:13px;opacity:.9">Tap + on a card to pick up to 3 Pokémon and compare them.</p>
+</div></header>
+<div class="active" id="active" hidden><span>Showing type: <b id="at"></b></span><button id="back">← Show all</button></div>
+<div class="chips" id="chips" hidden></div>
+<p id="note" hidden style="max-width:1000px;margin:12px auto 0;padding:10px 14px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:14px">Images could not be loaded. If you are viewing this inside a preview, save the file and open it in your browser, since previews often block outside requests.</p>
+<main class="grid" id="grid"></main>
+<div class="tray" id="tray" hidden></div>
+<dialog id="cmp"></dialog>
+<dialog id="dlg"></dialog>
+<script>
+const D=[
+[1,"bulbasaur",["grass","poison"],[45,49,49,65,65,45],0.7,6.9,"A seed on its back grows alongside it, soaking up sunlight."],
+[4,"charmander",["fire"],[39,52,43,60,50,65],0.6,8.5,"The flame on its tail shows how healthy and energetic it is."],
+[7,"squirtle",["water"],[44,48,65,50,64,43],0.5,9.0,"Retreats into its shell, then fires back with powerful jets of water."],
+[25,"pikachu",["electric"],[35,55,40,50,50,90],0.4,6.0,"Stores electricity in its cheeks and releases it when threatened."],
+[39,"jigglypuff",["normal","fairy"],[115,45,20,45,25,20],0.5,5.5,"Its lullaby sends anyone who hears it straight to sleep."],
+[94,"gengar",["ghost","poison"],[60,65,60,130,75,110],1.5,40.5,"Lurks in shadows and is said to drop the room temperature when near."],
+[130,"gyarados",["water","flying"],[95,125,79,60,100,81],6.5,235,"Famously short-tempered, it can wreck an entire town in a rage."],
+[133,"eevee",["normal"],[55,55,50,45,65,55],0.3,6.5,"Its unstable genes let it evolve into many different forms."],
+[143,"snorlax",["normal"],[160,110,65,65,110,30],2.1,460,"Eats huge amounts of food, then goes right back to sleep."],
+[149,"dragonite",["dragon","flying"],[91,134,95,100,100,80],2.2,210,"Gentle and kind, it is said to guide lost ships to safety."],
+[150,"mewtwo",["psychic"],[106,110,90,154,90,130],2.0,122,"Created through genetic engineering, with immense psychic power."],
+[448,"lucario",["fighting","steel"],[70,110,70,115,70,90],1.2,54,"Reads the aura of living things to sense feelings and positions."]
+].map(a=>({id:a[0],name:a[1],types:a[2],stats:a[3],h:a[4],w:a[5],desc:a[6]}));
+const SN=["HP","Atk","Def","SpA","SpD","Spe"];
+const col=t=>`var(--${t})`;
+const types=[...new Set(D.flatMap(p=>p.types))].sort();
+let type="all",sel=[];
+const $=id=>document.getElementById(id);
+const art=p=>`<img data-id="${p.id}" alt="${p.name}" onload="this.parentNode.classList.add('ok')" onerror="this.remove();note()">`;
+const note=()=>$("note").hidden=false;
+const cache={};
+const artUrl=id=>cache[id]??=fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then(r=>{if(!r.ok)throw 0;return r.json()}).then(j=>j.sprites.other["official-artwork"].front_default||j.sprites.front_default);
+const hydrate=root=>root.querySelectorAll("img[data-id]").forEach(im=>artUrl(im.dataset.id).then(u=>{im.src=u}).catch(()=>{im.src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${im.dataset.id}.png`}));
+const pad=n=>"#"+String(n).padStart(4,"0");
+const tagsHtml=p=>p.types.map(t=>`<span class="tag" style="background:${col(t)}">${t}</span>`).join("");
+function chips(){
+  $("chips").innerHTML=["all",...types].map(t=>`<button class="chip ${t===type?"on":""}" data-t="${t}">${t}</button>`).join("");
+}
+function render(){
+  const q=$("q").value.trim().toLowerCase();
+  const list=D.filter(p=>(type==="all"||p.types.includes(type))&&(!q||p.name.includes(q)||String(p.id)===q.replace("#","")));
+  $("grid").innerHTML=list.length?list.map(p=>`<div class="card" data-id="${p.id}" tabindex="0"><button class="pick ${sel.includes(p.id)?"on":""}" data-pick="${p.id}" aria-label="Compare ${p.name}">${sel.includes(p.id)?"✓":"+"}</button>
+    <div class="num">${pad(p.id)}</div>
+    <div class="orb" style="background:${col(p.types[0])}">${p.name[0].toUpperCase()}${art(p)}</div>
+    <div class="name">${p.name}</div><div class="tags">${tagsHtml(p)}</div></div>`).join(""):`<div class="empty">No Pokémon found.</div>`;
+  hydrate($("grid"));
+}
+function open(id){
+  const p=D.find(x=>x.id==id), c=col(p.types[0]);
+  $("dlg").innerHTML=`<div class="top" style="background:${c}"><button class="x" aria-label="Close">×</button>
+    <div class="orb">${p.name[0].toUpperCase()}${art(p)}</div>
+    <div style="font-size:22px;font-weight:700;text-transform:capitalize">${p.name}</div>
+    <div style="opacity:.85;font-size:13px">${pad(p.id)}</div></div>
+    <div class="body"><div class="tags">${tagsHtml(p)}</div>
+    <p style="color:var(--muted);text-align:center;margin:12px 0 4px">${p.desc}</p>
+    <div class="facts"><div><b>${p.h} m</b>Height</div><div><b>${p.w} kg</b>Weight</div></div>
+    ${p.stats.map((s,i)=>`<div class="row"><span>${SN[i]}</span><b>${s}</b><div class="bar"><i style="width:${Math.min(s/160*100,100)}%;background:${c}"></i></div></div>`).join("")}</div>`;
+  $("dlg").showModal();
+  hydrate($("dlg"));
+}
+$("q").addEventListener("input",render);
+$("menu").addEventListener("click",()=>{const h=$("chips").hidden=!$("chips").hidden;$("menu").setAttribute("aria-expanded",String(!h))});
+function setType(t){
+  type=t;chips();render();
+  $("lbl").textContent=t==="all"?"":t;
+  $("at").textContent=t;$("active").hidden=t==="all";
+  $("chips").hidden=true;$("menu").setAttribute("aria-expanded","false");
+  scrollTo({top:0,behavior:"smooth"});
+}
+$("chips").addEventListener("click",e=>{const t=e.target.dataset.t;if(t)setType(t)});
+$("back").addEventListener("click",()=>setType("all"));
+document.querySelector(".top-row h1").addEventListener("click",()=>{$("q").value="";setType("all")});
+$("grid").addEventListener("click",e=>{
+  const b=e.target.closest(".pick");
+  if(b){toggle(Number(b.dataset.pick));return}
+  const c=e.target.closest(".card");if(c)open(c.dataset.id)});
+$("grid").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList.contains("card"))open(e.target.dataset.id)});
+$("dlg").addEventListener("click",e=>{if(e.target===$("dlg")||e.target.className==="x")$("dlg").close()});
+const byId=id=>D.find(p=>p.id==id);
+const sum=p=>p.stats.reduce((a,b)=>a+b,0);
+function syncPicks(){
+  document.querySelectorAll(".pick").forEach(b=>{const on=sel.includes(Number(b.dataset.pick));b.classList.toggle("on",on);b.textContent=on?"✓":"+"});
+  const t=$("tray");t.hidden=!sel.length;
+  t.innerHTML=`<div class="sel">${sel.map(id=>{const p=byId(id);return `<span class="pill" style="background:${col(p.types[0])}">${p.name}<button data-rm="${id}" aria-label="Remove ${p.name}">×</button></span>`}).join("")}</div>
+  <button class="go" id="go" ${sel.length<2?"disabled":""}>${sel.length<2?"Pick 1 more":"Compare ("+sel.length+")"}</button><button class="clr" id="clr">Clear</button>`;
+}
+function toggle(id){
+  if(sel.includes(id))sel=sel.filter(x=>x!==id);
+  else{sel.push(id);if(sel.length>3)sel.shift()}
+  syncPicks();
+}
+$("tray").addEventListener("click",e=>{
+  const r=e.target.closest("[data-rm]");
+  if(r){toggle(Number(r.dataset.rm));return}
+  if(e.target.id==="clr"){sel=[];syncPicks()}
+  if(e.target.id==="go"&&sel.length>1)compare();
+});
+function compare(){
+  const ps=sel.map(byId),tots=ps.map(sum),wins=ps.map(()=>0);
+  const row=(label,vals,max,scale)=>`<div class="crow" style="--n:${ps.length}"><span>${label}</span>${vals.map(v=>`<div class="cell ${v===max?"best":""}"><b>${v}</b><div class="bar"><i style="width:${Math.min(v/scale*100,100)}%"></i></div></div>`).join("")}</div>`;
+  const rows=SN.map((n,i)=>{
+    const v=ps.map(p=>p.stats[i]),m=Math.max(...v);
+    if(v.filter(x=>x===m).length===1)wins[v.indexOf(m)]++;
+    return row(n,v,m,160)}).join("");
+  const mt=Math.max(...tots),top=ps.filter((p,i)=>tots[i]===mt);
+  const verdict=top.length===1
+    ? `<b style="text-transform:capitalize">${top[0].name}</b> comes out ahead overall with a total of ${mt}, and wins ${wins[ps.indexOf(top[0])]} of 6 stats outright.`
+    : `A tie on total (${mt}) between ${top.map(p=>p.name).join(" and ")}.`;
+  $("cmp").innerHTML=`<div class="chead"><b>Compare</b><button class="cx" aria-label="Close">×</button></div><div class="body">
+    <div class="crow" style="--n:${ps.length}"><span></span>${ps.map(p=>`<div class="cell"><div class="orb sm" style="background:${col(p.types[0])}">${p.name[0].toUpperCase()}${art(p)}</div><div class="name">${p.name}</div><div class="tags">${tagsHtml(p)}</div></div>`).join("")}</div>
+    ${rows}<hr style="border:0;border-top:1px solid var(--line)">${row("Total",tots,mt,700)}
+    <p class="verdict">${verdict}<br><span style="color:var(--muted)">Total is only a rough guide. Types, moves and abilities matter in real battles.</span></p></div>`;
+  $("cmp").showModal();hydrate($("cmp"));
+}
+$("cmp").addEventListener("click",e=>{if(e.target===$("cmp")||e.target.classList.contains("cx"))$("cmp").close()});
+chips();render();
+</script>
+</body>
+</html>
